@@ -40,6 +40,19 @@ def get_one(spell_id: str) -> Spell:
         times=spell["time"]
         )
 
+def get_by_name(name: str, source: str) -> Spell:
+    collection = db.client.session_zero.spells
+    spell = collection.find_one({"name": name, "source": source}) #.collation({"locale": "en_US","strength": 1})  
+    print(spell)
+    school = get_by_short(spell["school"])
+    return Spell(
+        id=str(spell["_id"]), 
+        name=spell["name"], 
+        level=spell["level"], 
+        school=school,
+        times=spell["time"]
+        )
+
 def get_by_school(school: str) -> list[Spell]:
     collection = db.client.session_zero.spells
     return [Spell(id=str(s["_id"]), name=s["name"], level=s["level"]) for s in collection.find({"school": school})]

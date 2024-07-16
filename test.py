@@ -1,4 +1,4 @@
-from schema import spells
+from schema import spell
 
 def main():
     # get all spells as a list of Spell objects
@@ -20,7 +20,7 @@ def main():
     #     print(spell_lookup)
 
     # get spells for bards up to level 5
-    bard_spells = spells.get_spells_by_class(dnd_class="Bard", sub_class="College of Swords", level=5)
+    bard_spells = spell.get_spells_by_class(dnd_class="Bard", sub_class="College of Swords", level=5)
     for spell in bard_spells:
         print(spell)
 
