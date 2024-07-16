@@ -71,5 +71,13 @@ def get_sub_classes_from_spell_lookup(sub_class_dict: dict, allowed_books: list[
                     sub_classes.append((dnd_class, sub_class_dict["name"]))
     return sub_classes
 
-
+def get_spells_by_class(dnd_class: str, sub_class: str, level: int) -> list[Spell]:
+    spell_collection = db.client.session_zero.spells
+    # spell_lookup_collection = db.client.session_zero.spell_lookup
+    # get all spells from the spell lookup collection that are available to the class
+    spell_lookup = get_spell_lookup()
+    spell_names = [s.name for s in spell_lookup if dnd_class in s.classes or (dnd_class, sub_class) in s.sub_classes]
+    # print(spell_names)
+    spells = [Spell(id=str(s["_id"]), name=s["name"], level=s["level"]) for s in spell_collection.find({"name": {"$in": spell_names}, "level": {"$lte": level}}).collation({"locale": "en_US","strength": 1})]
+    return spells
 

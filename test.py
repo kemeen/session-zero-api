@@ -15,9 +15,14 @@ def main():
     # print(single_spell)
 
     # get all spells as a list of SpellLookUp objects
-    all_spell_lookups = spells.get_spell_lookup()
-    for spell_lookup in all_spell_lookups[:max_spells]:
-        print(spell_lookup)
+    # all_spell_lookups = spells.get_spell_lookup()
+    # for spell_lookup in all_spell_lookups[:max_spells]:
+    #     print(spell_lookup)
+
+    # get spells for bards up to level 5
+    bard_spells = spells.get_spells_by_class(dnd_class="Bard", sub_class="College of Swords", level=5)
+    for spell in bard_spells:
+        print(spell)
 
 if __name__ == "__main__":
     main()
