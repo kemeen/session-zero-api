@@ -8,6 +8,8 @@ class HitDice(BaseModel):
     number: int
 
     def from_mongo(data: dict) -> "HitDice":
+        if data is None:
+            return HitDice(faces=0, number=0)
         return HitDice(
             faces=data.get("faces"),
             number=data.get("number")
@@ -30,7 +32,7 @@ class DnDClass(BaseModel):
             id=str(data.get("_id")),
             name=class_info.get("name"),
             proficiencies=class_info.get("proficiency", []),
-            sub_class_title=class_info.get("subclassTitle"),
+            sub_class_title=class_info.get("subclassTitle", ""),
             spellcasting_ability=class_info.get("spellcastingAbility"),
             hit_dice=HitDice.from_mongo(class_info.get("hd"))
         )
