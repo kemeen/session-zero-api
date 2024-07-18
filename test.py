@@ -1,4 +1,4 @@
-from schema import spell
+from schema import race
 
 def main():
     # get all spells as a list of Spell objects
