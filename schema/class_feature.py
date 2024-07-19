@@ -10,7 +10,7 @@ class ClassFeature(BaseModel):
 
     def from_mongo(data: dict, dnd_class_id: str) -> "ClassFeature":
         if data is None:
-            return ClassFeature(name="", description="")
+            raise ValueError("data for class feature is None!")
         
         return ClassFeature(
             dnd_class_id=dnd_class_id,
@@ -18,6 +18,3 @@ class ClassFeature(BaseModel):
             level=data.get("level")
         )
     
-    def get_all() -> list["ClassFeature"]:
-collection = db.client.session_zero.classes
-        return [ClassFeature.from_mongo(c.get("classFeature"), str(c.get("_id"))) for c in collection.find()]

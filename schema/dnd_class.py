@@ -1,8 +1,10 @@
 from pydantic import BaseModel
 import pymongo
+from sympy import O
 from session_zero_api import database as db
 from typing import Optional
 from bson import ObjectId
+from .class_feature import ClassFeature
 
 class HitDice(BaseModel):
     faces: int
@@ -23,11 +25,16 @@ class DnDClass(BaseModel):
     sub_class_title: str
     hit_dice: Optional[HitDice] = None
     spellcasting_ability: Optional[str] = None
+    features: Optional[list[ClassFeature]] = []
 
     def from_mongo(data: dict) -> "DnDClass":
         class_info = data["class"][0]
         if class_info is None:
             raise KeyError("class key not found in data")
+        if "classFeature" in data:
+            features = [ClassFeature.from_mongo(f, str(data.get("_id"))) for f in data.get("classFeature", [])]
+        else:
+            features = []
         
         return DnDClass(
             id=str(data.get("_id")),
@@ -35,15 +42,17 @@ class DnDClass(BaseModel):
             proficiencies=class_info.get("proficiency", []),
             sub_class_title=class_info.get("subclassTitle", ""),
             spellcasting_ability=class_info.get("spellcastingAbility"),
-            hit_dice=HitDice.from_mongo(class_info.get("hd"))
+            hit_dice=HitDice.from_mongo(class_info.get("hd")),
+            features=features
         )
 
 
 def get_all() -> list[DnDClass]:
     collection = db.client.session_zero.classes
-    # return sorted([DnDClass.from_mongo(c) for c in collection.find()], key=lambda x: x.name)
-    # return [DnDClass.from_mongo(c) for c in collection.find()]
-    return [DnDClass.from_mongo(c) for c in collection.find({"class.isSidekick": {"$ne": True}}).sort("class.name", pymongo.ASCENDING)]
+    return [DnDClass.from_mongo(c) for c in collection.find(
+        {"class.isSidekick": {"$ne": True}},
+        {"class.name": 1, "class.proficiency": 1, "class.subclassTitle": 1, "class.spellcastingAbility": 1, "class.hd": 1}
+        ).sort("class.name", pymongo.ASCENDING)]
 
 def get_by_id(class_id: str) -> DnDClass:
     collection = db.client.session_zero.classes
