@@ -61,6 +61,6 @@ def get_by_id(class_id: str) -> DnDClass:
 
 def get_by_name(class_name: str) -> DnDClass:
     collection = db.client.session_zero.classes
-    class_info = collection.find_one(filter={"class.name": class_name})
+    class_info = collection.find_one(filter={"class.name": class_name}).collation({"locale": "en_US","strength": 1})  
     return DnDClass.from_mongo(class_info)
 
