@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+import pymongo
 from session_zero_api import database as db
 from typing import Optional
 from bson import ObjectId
@@ -40,7 +41,9 @@ class DnDClass(BaseModel):
 
 def get_all() -> list[DnDClass]:
     collection = db.client.session_zero.classes
-    return [DnDClass.from_mongo(c) for c in collection.find()]
+    # return sorted([DnDClass.from_mongo(c) for c in collection.find()], key=lambda x: x.name)
+    # return [DnDClass.from_mongo(c) for c in collection.find()]
+    return [DnDClass.from_mongo(c) for c in collection.find({"class.isSidekick": {"$ne": True}}).sort("class.name", pymongo.ASCENDING)]
 
 def get_by_id(class_id: str) -> DnDClass:
     collection = db.client.session_zero.classes
