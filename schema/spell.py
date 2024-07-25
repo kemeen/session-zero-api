@@ -1,11 +1,12 @@
-from ast import Not
-from operator import is_
 from pydantic import BaseModel
 from session_zero_api import database as db
 from typing import Optional
 from bson import ObjectId
 from .spell_school import SpellSchool, get_by_short
 from pymongo.collation import Collation
+import session_zero_api as sz
+
+LOGGER = sz.get_logger(__name__)
 
 class CastTime(BaseModel):
     number: int
@@ -21,22 +22,30 @@ class Spell(BaseModel):
     id: Optional[str] = None
     name: str
     level: int
+    source: Optional[str] = ""
     group: Optional[str] = ""
     school: Optional[SpellSchool] = None
     times: Optional[list[CastTime]] = []
+    daily_uses: Optional[int] = 0
+    ability: Optional[str] = ""
+    resource_name: Optional[str] = ""
+    resource_amount: Optional[int] = 0
     is_ritual: Optional[bool] = False
     is_custom: Optional[bool] = False
     is_prepared: Optional[bool] = False
     is_innate: Optional[bool] = False
     is_known: Optional[bool] = False
+    is_expanded: Optional[bool] = False
 
+    @staticmethod
     def from_mongo(data: dict) -> "Spell":
         return Spell(
-            id=str(data.get("_id")),
-            name=data.get("name"),
-            level=data.get("level"),
-            school=get_by_short(data.get("school")),
-            times=[CastTime(number=t.get("number"), unit=t.get("unit")) for t in data.get("time", [])]
+            id=str(data.get("_id", "")),
+            name=data.get("name", ""),
+            level=data.get("level", -1),
+            school=get_by_short(data.get("school", "")),
+            times=[CastTime(number=t.get("number"), unit=t.get("unit")) for t in data.get("time", [])],
+            source=data.get("source", "").lower(),
         )
 
 class SpellChoice(BaseModel):
@@ -44,16 +53,32 @@ class SpellChoice(BaseModel):
     levels: list[int]
     schools: Optional[list[str]] = []
     classes: Optional[list[str]] = []
+    sources: Optional[list[str]] = []
 
-    def from_mongo(data: str) -> "SpellChoice":
+    @staticmethod
+    def from_mongo(data: dict, group: str) -> "SpellChoice":
         # TODO implement to split the choice info into levels, schools, and classes
-        print(data)
-        raise NotImplementedError("SpellChoice.from_mongo not implemented")
-        return SpellChoice(
-            level=data.get("level"),
-            spells=[Spell.from_mongo(s) for s in data.get("spells")]
-        )
+        if "choose" in data:
+            key = "choose"
+        elif "all" in data:
+            key = "all"
+        else:
+            LOGGER.exception(f"Unknown spell choice type: {data}")
+            raise ValueError(f"Unknown spell choice type: {data}")
 
+        choices_data = data.get(key, "").split("|")
+        choices = {}
+        for choice in choices_data:
+            key, value = choice.split("=")
+            choices[key] = value.split(";")
+        
+        return SpellChoice(
+            levels=[int(level) for level in choices.get("level", [])],
+            schools=[school.lower() for school in choices.get("school", [])],
+            classes=[dnd_class.lower() for dnd_class in choices.get("class", [])],
+            sources=[source.lower() for source in choices.get("source", [])],
+            group=group
+        )
 def get_all() -> list[Spell]:
     collection = db.client.session_zero.spells
     spell_dicts = collection.find({}, {"name": 1, "level": 1})
@@ -64,28 +89,16 @@ def get_all() -> list[Spell]:
 def get_one(spell_id: str) -> Spell:
     collection = db.client.session_zero.spells
     spell = collection.find_one({"_id": ObjectId(spell_id)})
-    school = get_by_short(spell["school"])
-    return Spell(
-        id=str(spell["_id"]), 
-        name=spell["name"], 
-        level=spell["level"], 
-        school=school,
-        times=spell["time"]
-        )
+    if spell is None:
+        raise ValueError(f"No spell found with id: {spell_id}")
+    return Spell.from_mongo(spell)
 
 def get_by_name(name: str) -> Spell:
     collection = db.client.session_zero.spells
     spell = collection.find_one({"name": name}, collation=Collation(locale="en_US", strength=1)) #.collation({"locale": "en_US","strength": 1})
     if spell is None:
         raise ValueError(f"No spell found with name: {name}")
-    school = get_by_short(spell["school"])
-    return Spell(
-        id=str(spell["_id"]), 
-        name=spell["name"], 
-        level=spell["level"], 
-        school=school,
-        times=spell["time"]
-        )
+    return Spell.from_mongo(spell)
 
 def get_by_school(school: str) -> list[Spell]:
     collection = db.client.session_zero.spells

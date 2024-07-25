@@ -7,8 +7,8 @@ router = APIRouter(
 )
 
 @router.get("/name")
-def get_spells_by_name(name: str, source: str) -> spell.Spell:
-    return spell.get_by_name(name=name, source=source)
+def get_spells_by_name(name: str) -> spell.Spell:
+    return spell.get_by_name(name=name)
 
 @router.get("/class_and_level")
 def get_spells_by_class_and_level(class_name: str, sub_class: str, level: int) -> list[spell.Spell]:
