@@ -8,20 +8,26 @@ class SpellSchool(BaseModel):
     short: str
     name: str
     description: str
-    # spells: list[str] = []
-    # spells: list[Spell] = []
+
+    def from_mongo(data: dict) -> "SpellSchool":
+        return SpellSchool(
+            id=str(data.get("_id")),
+            short=data.get("short"),
+            name=data.get("name"),
+            description=data.get("description")
+        )
 
 def get_all() -> list[SpellSchool]:
     collection = db.client.session_zero.spell_schools
-    schools = [SpellSchool(id=str(s["_id"]), short=s["short"], name=s["name"], description=s["description"]) for s in collection.find()]
+    schools = [SpellSchool.from_mongo(s) for s in collection.find({}, {"short": 1, "name": 1})]
     return schools
 
-def get_one(school_id: str) -> SpellSchool:
+def get_by_id(school_id: str) -> SpellSchool:
     collection = db.client.session_zero.spell_schools
     school = collection.find_one({"_id": ObjectId(school_id)})
-    return SpellSchool(id=str(school["_id"]), short=school["short"], name=school["name"], description=school["description"])
+    return SpellSchool.from_mongo(school)
 
 def get_by_short(short: str) -> SpellSchool:
     collection = db.client.session_zero.spell_schools
     school = collection.find_one({"short": short})
-    return SpellSchool(id=str(school["_id"]), short=school["short"], name=school["name"], description=school["description"])
+    return SpellSchool.from_mongo(school)

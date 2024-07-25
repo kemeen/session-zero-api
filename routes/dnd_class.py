@@ -19,3 +19,9 @@ def get_class_by_name(class_name: str) -> dnd_class.DnDClass:
     # Logic to retrieve a class from the database
     # using the class_name parameter
     return dnd_class.get_by_name(class_name=class_name)
+
+@router.get("/class_detail/")
+def get_class_detail(class_name: str, sub_class_name) -> dnd_class.DnDClass:
+    # Logic to retrieve a class from the database
+    # using the class_name and sub_class_name parameters
+    return dnd_class.get_class_detail(class_name=class_name, sub_class_name=sub_class_name)
