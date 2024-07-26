@@ -1,8 +1,6 @@
 import logging
-from math import log
 import pathlib
 
-from torch import log_
 
 def get_logger(name: str) -> logging.Logger:
     # setup logger
