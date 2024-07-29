@@ -1,8 +1,8 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Any, Optional
 import re
 from schema import spell
-# from .class_feature import ClassFeature
+from .class_feature import ClassFeature
 import session_zero_api as sz
 
 LOGGER = sz.get_logger(__name__)
@@ -13,12 +13,15 @@ class SubClass(BaseModel):
     spells: Optional[dict[int,dict[str,list[spell.Spell]|list[spell.SpellChoice]]]] = {}
     cantrips_progression: Optional[list[int]] = []
     spell_progression: Optional[list[int]] = []
-    # features: Optional[list[ClassFeature]] = []
+    features: Optional[list[ClassFeature]] = []
 
-    def from_mongo(data: dict) -> "SubClass":
+    @staticmethod
+    def from_mongo(data: dict, features: list[dict[str, Any]]=[]) -> "SubClass":
 
+        short_name = data.get("shortName", "")
         spells = parse_spells(data.get("additionalSpells", []))
         LOGGER.info(data.get("className"))
+        subclass_features = sorted([ClassFeature.from_mongo(f) for f in features if f.get("subclassShortName") == short_name], key=lambda x: x.level)
 
         return SubClass(
             name=data.get("name", ""),
@@ -26,9 +29,10 @@ class SubClass(BaseModel):
             spells=spells,
             cantrips_progression=data.get("cantripProgression", []),
             spell_progression=data.get("spellsKnownProgression", []),
-            # features=[ClassFeature.from_mongo(f, parent_id) for f in data.get("subclassFeatures", [])]
+            features=subclass_features
         )
 
+    @staticmethod
     def from_mongo_short(data: dict, subclass: str = "") -> "SubClass":
         LOGGER.info(f"Getting short subclass info on {data.get('className')} subclass {data.get('name')}")
         return SubClass(
