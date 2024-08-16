@@ -6,6 +6,10 @@ router = APIRouter(
     prefix="/spells"
 )
 
+@router.get("/")
+def get_spells() -> list[spell.Spell]:
+    return spell.get_all()
+
 @router.get("/name")
 def get_spells_by_name(name: str) -> spell.Spell:
     return spell.get_by_name(name=name)
@@ -14,6 +18,3 @@ def get_spells_by_name(name: str) -> spell.Spell:
 def get_spells_by_class_and_level(class_name: str, sub_class: str, level: int) -> list[spell.Spell]:
     return spell.get_spells_by_class(dnd_class=class_name, sub_class=sub_class, level=level)
 
-@router.get("/")
-def get_spells() -> list[spell.Spell]:
-    return spell.get_all()

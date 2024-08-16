@@ -1,4 +1,3 @@
-from re import sub
 from pydantic import BaseModel
 import pymongo
 from pymongo.collation import Collation
