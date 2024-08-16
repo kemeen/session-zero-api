@@ -8,8 +8,8 @@ load_dotenv(find_dotenv())
 # Create a new client and connect to the server
 client = MongoClient(
     host=os.getenv("HOST"), 
-    username=os.getenv("USERNAME"), 
-    password=os.getenv("PASSWORD"), 
+    username=os.getenv("MONGODB_USERNAME"), 
+    password=os.getenv("MONGODB_PASSWORD"), 
     appname=os.getenv("APPNAME"),
     document_class=dict,
     tz_aware=True,

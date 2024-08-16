@@ -12,5 +12,5 @@ def get_all() -> list[race.Race]:
 
 # router to return a race by id
 @router.get("/id/{id}")
-def get_by_id(id: int) -> race.Race:
+def get_by_id(id: str) -> race.Race:
     return race.get_by_id(id)

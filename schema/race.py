@@ -41,6 +41,7 @@ class RaceAge(BaseModel):
     mature: Optional[int] = 0
     max: Optional[int] = 0
 
+    @staticmethod
     def from_mongo(data: dict) -> "RaceAge":
         if data is None:
             return RaceAge(mature=0, max=0)
@@ -59,6 +60,7 @@ class Race(BaseModel):
     speed: MovementSpeed
     age: RaceAge
 
+    @staticmethod
     def from_mongo(data: dict) -> "Race":
         if data is None:
             raise ValueError("data is None")
@@ -82,4 +84,7 @@ def get_all() -> list[Race]:
 
 def get_by_id(id: str) -> Race:
     collection = db.client.session_zero.races
-    collection.find_one({"_id": ObjectId(id)})
+    result = collection.find_one({"_id": ObjectId(id)})
+    if result is None:
+        raise ValueError(f"No race found with id {id}")
+    return Race.from_mongo(result)
