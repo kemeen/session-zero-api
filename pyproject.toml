@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "session-zero-api"
+version = "0.1.0"
+description = "An API for table top role playing player helper app to support players during a game"
+authors = ["Kevin Michael Engel"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.111.0"
+uvicorn = "^0.30.1"
+pydantic = "^2.8.2"
+pymongo = "^4.8.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
