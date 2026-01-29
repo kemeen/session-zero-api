@@ -1,8 +1,6 @@
 from typing import Optional, Protocol, Union
 from pydantic import BaseModel
 
-EntryType = Gen
-
 class Entry(Protocol):
     def from_mongo(data: dict, name: str):
         ...
